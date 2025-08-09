@@ -1,18 +1,19 @@
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
+use rand_core::RngCore;
 
 use rusty_kyber::params::{CIPHERTEXT_BYTES, DU, DV, N, Q};
 use rusty_kyber::poly::Poly;
 use rusty_kyber::utils::{
-    poly_compress_d, poly_decompress_d,
-    poly_compress_u, poly_decompress_u,
-    poly_compress_v, poly_decompress_v,
-    poly_from_bytes, poly_to_bytes,
+    poly_compress_d, poly_decompress_d, poly_compress_u, poly_decompress_u, poly_compress_v,
+    poly_decompress_v, poly_from_bytes, poly_to_bytes,
 };
 
 fn canon_q(x: i16) -> i32 {
     let mut v = x as i32 % Q;
-    if v < 0 { v += Q; }
+    if v < 0 {
+        v += Q;
+    }
     v
 }
 
@@ -20,7 +21,6 @@ fn rand_poly(seed: [u8; 32]) -> Poly {
     let mut rng = ChaCha20Rng::from_seed(seed);
     let mut p = Poly::new();
     for i in 0..N {
-        // uniform-ish in 0..Q
         let v = (rng.next_u32() as i32) % Q;
         p.coeffs[i] = v as i16;
     }
@@ -29,9 +29,8 @@ fn rand_poly(seed: [u8; 32]) -> Poly {
 
 #[test]
 fn poly_12bit_pack_roundtrip() {
-    // Several seeds to exercise variation
     for s in 0u8..8 {
-        let mut a = rand_poly([s; 32]);
+        let a = rand_poly([s; 32]);
 
         // 12-bit codec used by Kyber's polynomial packer
         let mut bytes = [0u8; 384];
@@ -53,7 +52,6 @@ fn poly_12bit_pack_roundtrip() {
 
 #[test]
 fn d_bit_codecs_cover_all_required_widths() {
-    // The spec-related widths we care about: 4/5/10/11/12/13 bits
     let ds = [4usize, 5, 10, 11, 12, 13];
 
     for (idx, d) in ds.iter().enumerate() {
@@ -97,7 +95,6 @@ fn du_dv_wrappers_match_sizes() {
 
 #[test]
 fn ciphertext_size_consistency() {
-    // Sanity: computed CT size equals our DU/DV totals for active K
     let expected = (DU * N / 8) * rusty_kyber::params::K + (DV * N / 8);
     assert_eq!(CIPHERTEXT_BYTES, expected);
 }

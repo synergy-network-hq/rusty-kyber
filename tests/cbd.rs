@@ -1,150 +1,46 @@
-name: CI
+use rusty_kyber::params::N;
+use rusty_kyber::poly::Poly;
+use rusty_kyber::utils::{cbd, cbd_eta};
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+fn in_range(v: i16, eta: i16) -> bool {
+    v >= -eta && v <= eta
+}
 
-jobs:
-  build-test:
-    runs-on: ubuntu-latest
+#[test]
+fn cbd_eta2_bounds_and_alias() {
+    // eta=2 uses 4 bytes per 8 coeffs => N/8 blocks
+    let mut buf = vec![0u8; (N / 8) * 4];
+    // Deterministic but non-trivial pattern
+    for (i, b) in buf.iter_mut().enumerate() {
+        *b = (i as u8).wrapping_mul(0x9d).wrapping_add(0x37);
+    }
 
-    strategy:
-      fail-fast: false
-      matrix:
-        toolchain: [ stable, nightly ]
+    let mut r1 = Poly::new();
+    cbd_eta(&buf, 2, &mut r1);
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    // Bounds check
+    for &c in r1.coeffs.iter() {
+        assert!(in_range(c, 2), "eta=2 bound violated: {}", c);
+    }
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          components: clippy, rustfmt
+    // Alias cbd() equals cbd_eta(..., 2)
+    let mut r2 = Poly::new();
+    cbd(&buf, &mut r2);
+    assert_eq!(&r1.coeffs[..], &r2.coeffs[..]);
+}
 
-      - name: Show rustc/cargo
-        run: |
-          rustc -V
-          cargo -V
+#[test]
+fn cbd_eta3_bounds() {
+    // eta=3 uses 3 bytes per 4 coeffs => N/4 blocks
+    let mut buf = vec![0u8; (N / 4) * 3];
+    for (i, b) in buf.iter_mut().enumerate() {
+        *b = (i as u8).wrapping_mul(0x5b).wrapping_add(0x21);
+    }
 
-      - name: Format check
-        run: cargo fmt --all -- --check
+    let mut r = Poly::new();
+    cbd_eta(&buf, 3, &mut r);
 
-      - name: Clippy (default features)
-        run: cargo clippy --all-targets -- -D warnings
-
-      - name: Build & test (default features)
-        run: cargo test --all --verbose
-
-      - name: Check no_std build (kyber512)
-        run: cargo check --no-default-features --features kyber512
-
-      - name: Add wasm target
-        run: rustup target add wasm32-unknown-unknown
-
-      - name: Build crate for wasm (no_std kyber512)
-        run: cargo build --target wasm32-unknown-unknown --no-default-features --features kyber512 --verbose
-
-      - name: Build no_std example for wasm
-        run: cargo build --examples --target wasm32-unknown-unknown --no-default-features --features kyber512 --verbose
-
-      - name: Test kyber768 (std)
-        run: cargo test --no-default-features --features "std,kyber768" --verbose
-
-      - name: Test kyber1024 (std)
-        run: cargo test --no-default-features --features "std,kyber1024" --verbose
-
-      - name: Test serde+zeroize (kyber512)
-        run: cargo test --no-default-features --features "std,kyber512,serde,zeroize" --verbose
-
-      - name: Check serde+zeroize (kyber768)
-        run: cargo check --no-default-features --features "std,kyber768,serde,zeroize"
-
-      - name: Check serde+zeroize (kyber1024)
-        run: cargo check --no-default-features --features "std,kyber1024,serde,zeroize"
-
-      - name: Compile benches (do not run)
-        run: cargo bench --no-run --verbose
-
-      - name: Build docs (all features)
-        env:
-          RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --all-features
-
-      - name: Package (dry-run)
-        run: cargo package --allow-dirty
-
-      # -------- Fuzz build & short runs (nightly) --------
-      - name: Install nightly + cargo-fuzz
-        run: |
-          rustup toolchain install nightly
-          cargo +nightly install cargo-fuzz
-
-      - name: Fuzz build kyber512
-        run: cargo +nightly fuzz build --manifest-path fuzz/Cargo.toml
-
-      - name: Fuzz build kyber768
-        run: cargo +nightly fuzz build --manifest-path fuzz/Cargo.toml --no-default-features --features "std,kyber768"
-
-      - name: Fuzz build kyber1024
-        run: cargo +nightly fuzz build --manifest-path fuzz/Cargo.toml --no-default-features --features "std,kyber1024"
-
-      - name: Fuzz smoke: pack_unpack (30s)
-        run: cargo +nightly fuzz run pack_unpack --manifest-path fuzz/Cargo.toml -- -max_total_time=30 -rss_limit_mb=2048
-
-      - name: Fuzz smoke: kem_roundtrip (30s)
-        run: cargo +nightly fuzz run kem_roundtrip --manifest-path fuzz/Cargo.toml -- -max_total_time=30 -rss_limit_mb=2048
-
-      # -------- Embedded / ARM64 cross builds & runtime smoke --------
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross
-
-      - name: Cross build (aarch64-unknown-linux-gnu)
-        run: cross build --target aarch64-unknown-linux-gnu --verbose
-
-      - name: Cross run example (aarch64-unknown-linux-gnu) - arm64_smoke
-        run: cross run --target aarch64-unknown-linux-gnu --release --example arm64_smoke --features "std,kyber512"
-
-  coverage:
-    name: Coverage (tarpaulin)
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Rust (stable)
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
-
-      - name: Install cargo-tarpaulin
-        run: cargo install cargo-tarpaulin
-
-      - name: Coverage default (std, kyber512) - fail under 90%
-        run: |
-          cargo tarpaulin --out Lcov --timeout 600 --verbose --fail-under 90
-          mv lcov.info lcov_kyber512.info
-
-      - name: Coverage kyber768 (std) - fail under 90%
-        run: |
-          cargo tarpaulin --no-default-features --features "std,kyber768" --out Lcov --timeout 600 --verbose --fail-under 90
-          mv lcov.info lcov_kyber768.info
-
-      - name: Coverage kyber1024 (std) - fail under 90%
-        run: |
-          cargo tarpaulin --no-default-features --features "std,kyber1024" --out Lcov --timeout 600 --verbose --fail-under 90
-          mv lcov.info lcov_kyber1024.info
-
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-lcov
-          path: |
-            lcov_kyber512.info
-            lcov_kyber768.info
-            lcov_kyber1024.info
+    for &c in r.coeffs.iter() {
+        assert!(in_range(c, 3), "eta=3 bound violated: {}", c);
+    }
+}

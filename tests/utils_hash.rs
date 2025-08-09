@@ -1,9 +1,9 @@
 use sha3::{Digest, Sha3_256, Sha3_512, Shake128, Shake256};
-use sha3::digest::{ExtendableOutput, Update, XofReader};
+use sha3::digest::{ExtendableOutput, XofReader};
 
 use rusty_kyber::params::{N, Q};
 use rusty_kyber::poly::Poly;
-use rusty_kyber::utils::{h, g, kdf, prf, xof_matrix, rej_uniform};
+use rusty_kyber::utils::{g, h, kdf, prf, rej_uniform, xof_matrix};
 
 #[test]
 fn h_matches_sha3_256() {
@@ -12,7 +12,8 @@ fn h_matches_sha3_256() {
     h(msg, &mut ours);
 
     let mut hasher = Sha3_256::new();
-    hasher.update(msg);
+    // Disambiguate: call the Digest::update method explicitly.
+    sha3::Digest::update(&mut hasher, msg);
     let expected = hasher.finalize();
 
     assert_eq!(ours.as_slice(), expected.as_slice());
@@ -25,7 +26,7 @@ fn g_matches_sha3_512() {
     g(msg, &mut ours);
 
     let mut hasher = Sha3_512::new();
-    hasher.update(msg);
+    sha3::Digest::update(&mut hasher, msg);
     let expected = hasher.finalize();
 
     assert_eq!(ours.as_slice(), expected.as_slice());
@@ -38,7 +39,8 @@ fn kdf_matches_shake256_32bytes() {
     kdf(input, &mut ours);
 
     let mut x = Shake256::default();
-    x.update(input);
+    // Disambiguate: call the Update::update method explicitly.
+    sha3::digest::Update::update(&mut x, input);
     let mut rdr = x.finalize_xof();
     let mut expected = [0u8; 32];
     rdr.read(&mut expected);
@@ -68,10 +70,9 @@ fn xof_matrix_equivalence_to_shake128_concat() {
     let mut ours = [0u8; 64];
     xof_matrix(&rho, i, j, &mut ours);
 
-    // Direct SHAKE128 over rho || [i, j]
     let mut x = Shake128::default();
-    x.update(&rho);
-    x.update(&[i, j]);
+    sha3::digest::Update::update(&mut x, &rho);
+    sha3::digest::Update::update(&mut x, &[i, j]);
     let mut rdr = x.finalize_xof();
     let mut expected = [0u8; 64];
     rdr.read(&mut expected);
@@ -82,7 +83,6 @@ fn xof_matrix_equivalence_to_shake128_concat() {
 #[test]
 fn rej_uniform_exact_pack() {
     // Build a buffer encoding exactly N 12-bit values in the layout expected by rej_uniform.
-    // Pack two 12-bit values (v0, v1) into 3 bytes: see utils.rs for the inverse.
     let mut vals = vec![0u16; N];
     for i in 0..N {
         vals[i] = (i as u16) % (Q as u16);

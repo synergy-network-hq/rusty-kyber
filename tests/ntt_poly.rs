@@ -1,12 +1,15 @@
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
+use rand_core::RngCore;
 
 use rusty_kyber::params::{N, Q};
 use rusty_kyber::poly::Poly;
 
 fn canon_q(x: i16) -> i32 {
     let mut v = x as i32 % Q;
-    if v < 0 { v += Q; }
+    if v < 0 {
+        v += Q;
+    }
     v
 }
 
