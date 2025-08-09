@@ -1,6 +1,14 @@
 #![no_std]
 #![no_main]
 
+
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
+}
+
 // Minimal no_std smoke. Built for wasm32-unknown-unknown in CI.
 // Provide an entry point so the example links cleanly.
 

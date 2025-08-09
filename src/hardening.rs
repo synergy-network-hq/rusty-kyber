@@ -10,6 +10,8 @@
 //! - Double-execution defends against fault/glitch injection that flips a bit
 //!   during decapsulation. Mismatch yields an all-zero shared secret.
 
+use subtle::ConditionallySelectable;
+
 use subtle::{ConstantTimeEq, Choice};
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroizing;
