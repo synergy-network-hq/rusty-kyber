@@ -1,0 +1,17 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Cargo / tooling
+Cargo.lock
+**/*.fingerprint/
+**/*.rmeta
+
+# IDEs / editors
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

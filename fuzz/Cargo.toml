@@ -1,0 +1,38 @@
+[package]
+name = "rusty-kyber-fuzz"
+version = "0.0.1"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[features]
+default = ["std", "kyber512"]
+std = ["rusty-kyber/std"]
+serde = ["rusty-kyber/serde"]
+zeroize = ["rusty-kyber/zeroize"]
+kyber512 = ["rusty-kyber/kyber512"]
+kyber768 = ["rusty-kyber/kyber768"]
+kyber1024 = ["rusty-kyber/kyber1024"]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+rand = "0.8"
+rand_chacha = "0.3"
+
+[dependencies.rusty-kyber]
+path = ".."
+default-features = false
+
+[[bin]]
+name = "pack_unpack"
+path = "fuzz_targets/pack_unpack.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "kem_roundtrip"
+path = "fuzz_targets/kem_roundtrip.rs"
+test = false
+doc = false
