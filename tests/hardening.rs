@@ -1,13 +1,12 @@
 #![cfg(feature = "hardening")]
 
-use subtle::{Choice, ConditionallySelectable};
-use rand::{SeedableRng};
+use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
-use rusty_kyber::{keypair};
 use rusty_kyber::api::Ciphertext;
-use rusty_kyber::hardening::decapsulate_hardened;
 use rusty_kyber::encapsulate;
+use rusty_kyber::hardening::decapsulate_hardened;
+use rusty_kyber::keypair;
 
 #[test]
 fn hardening_returns_zero_on_fault() {

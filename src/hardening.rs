@@ -39,8 +39,7 @@ pub fn decapsulate_hardened(sk: &SecretKey, ct: &Ciphertext) -> SharedSecret {
     // Select either the agreed secret or an all-zero value, in constant time.
     let mut out = [0u8; SHARED_SECRET_BYTES];
     for i in 0..SHARED_SECRET_BYTES {
-        // out[i] = equal ? ss1[i] : 0
-        out[i] = u8::conditional_select(&0u8, &ss1[i], equal);
+        out[i] = <u8 as subtle::ConditionallySelectable>::conditional_select(&0u8, &ss1[i], equal);
     }
 
     // Scrub redundant buffer(s)

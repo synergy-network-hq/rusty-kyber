@@ -112,6 +112,12 @@ pub fn xof_matrix(rho: &[u8; 32], i: u8, j: u8, out: &mut [u8]) {
     rdr.read(out);
 }
 
+/// Alias for xof_matrix for compatibility with tests
+#[inline(always)]
+pub fn xof_matrix_entry(rho: &[u8; 32], i: u8, j: u8, out: &mut [u8]) {
+    xof_matrix(rho, i, j, out);
+}
+
 /// Rejection sampling into `[0, Q)` using packed 12-bit candidates.
 #[inline]
 pub fn rej_uniform(buf: &[u8], r: &mut Poly) {

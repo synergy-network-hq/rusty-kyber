@@ -3,7 +3,7 @@ use sha3::digest::{ExtendableOutput, XofReader};
 
 use rusty_kyber::params::{N, Q};
 use rusty_kyber::poly::Poly;
-use rusty_kyber::utils::{g, h, kdf, prf, rej_uniform, xof_matrix};
+use rusty_kyber::utils::{g, h, kdf, prf, rej_uniform, xof_matrix_entry};
 
 #[test]
 fn h_matches_sha3_256() {
@@ -16,7 +16,7 @@ fn h_matches_sha3_256() {
     sha3::Digest::update(&mut hasher, msg);
     let expected = hasher.finalize();
 
-    assert_eq!(ours.as_slice(), expected.as_slice());
+    assert_eq!(ours[..], expected[..]);
 }
 
 #[test]
@@ -29,7 +29,7 @@ fn g_matches_sha3_512() {
     sha3::Digest::update(&mut hasher, msg);
     let expected = hasher.finalize();
 
-    assert_eq!(ours.as_slice(), expected.as_slice());
+    assert_eq!(ours[..], expected[..]);
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn xof_matrix_equivalence_to_shake128_concat() {
     let (i, j) = (3u8, 5u8);
 
     let mut ours = [0u8; 64];
-    xof_matrix(&rho, i, j, &mut ours);
+    xof_matrix_entry(&rho, i, j, &mut ours);
 
     let mut x = Shake128::default();
     sha3::digest::Update::update(&mut x, &rho);

@@ -1,3 +1,5 @@
+//! IND-CPA public-key decapsulation.
+
 use crate::params::{K, SECRET_KEY_BYTES, CIPHERTEXT_BYTES, POLY_BYTES, DU, DV};
 use crate::poly::Poly;
 use crate::utils::{poly_from_bytes, poly_decompress_u, poly_decompress_v, poly_to_msg};
