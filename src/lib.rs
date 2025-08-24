@@ -12,15 +12,21 @@
 //! - **Optional**: `serde` (serialize public types), `zeroize` (zeroize `SecretKey` on drop),
 //!   `hardening` (redundant constant-time checks and buffer scrubbing)
 
-pub mod params;
-pub mod ntt;
-pub mod poly;
-pub mod utils;
-pub mod keygen;
-pub mod encaps;
-pub mod decaps;
-pub mod kem;
-pub mod api;
+// FIPS 203 ML-KEM Implementation Modules
+pub mod params; // Parameter sets and constants (FIPS 203 Table 2)
+pub mod math; // Consolidated mathematical operations (FIPS 203 Algorithms 4-11)
+
+// Legacy modules moved to archive/ folder
+// pub mod ntt; // Legacy NTT implementation - moved to archive/ntt_legacy.rs
+// pub mod poly; // Legacy polynomial operations - moved to archive/poly_legacy.rs
+// pub mod utils; // Legacy utility functions - moved to archive/utils_legacy.rs
+
+// Core ML-KEM algorithms (FIPS 203 Algorithms 12-15)
+pub mod keygen; // ML-KEM.KeyGen (Algorithm 15)
+pub mod encaps; // ML-KEM.Encaps (Algorithm 16)
+pub mod decaps; // ML-KEM.Decaps (Algorithm 17)
+pub mod kem; // High-level KEM interface
+pub mod api; // Public API and type wrappers
 
 #[cfg(feature = "hardening")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hardening")))]
@@ -28,12 +34,18 @@ pub mod hardening;
 
 // Re-export the ergonomic API at the crate root
 pub use crate::api::{
-    decapsulate, encapsulate, keypair, Ciphertext, PublicKey, SecretKey, SharedSecret,
+    decapsulate,
+    encapsulate,
+    keypair,
+    Ciphertext,
+    PublicKey,
+    SecretKey,
+    SharedSecret,
 };
 
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-pub use crate::api::{encapsulate_osrng, keypair_osrng};
+pub use crate::api::{ encapsulate_osrng, keypair_osrng };
 
 #[cfg(feature = "hardening")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hardening")))]

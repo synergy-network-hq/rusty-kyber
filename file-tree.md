@@ -1,53 +1,68 @@
 # rusty-kyber — File Tree
-*(updated: 2025-08-08)*
+
+*(updated: 2025-08-12)*
 
 rusty-kyber/
+├── benches/
+│   ├── benchmark.rs
+│   ├── kem.rs
+│   ├── ntt.rs
+│   └── poly.rs
+├── examples/
+│   └── no_std.rs
 ├── fuzz/
 │   ├── Cargo.toml
+│   ├── README.md
+│   ├── artifacts/
+│   │   └── pack_unpack/
+│   ├── corpus/
+│   │   └── pack_unpack/
 │   └── fuzz_targets/
-│      ├── kem_roundtrip.rs
-│      └── pack_unpack.rs
-├── examples/
-│   └── no_std.rs # NEW: no_std smoke (wasm32)
-├── .github/
-│   └── workflows/
-│   └── ci.yml
-├── .gitignore
+│       ├── kem_roundtrip.rs
+│       └── pack_unpack.rs
+├── src/
+│   ├── api.rs
+│   ├── decaps.rs
+│   ├── encaps.rs
+│   ├── hardening.rs
+│   ├── kem.rs
+│   ├── keygen.rs
+│   ├── lib.rs
+│   ├── ntt.rs
+│   ├── params.rs
+│   ├── poly.rs
+│   └── utils.rs
+├── tests/
+│   ├── api_std.rs
+│   ├── arm64_smoke.rs
+│   ├── cbd.rs
+│   ├── ctr_drbg.rs
+│   ├── hardening.rs
+│   ├── hardening_ok.rs
+│   ├── kat.rs
+│   ├── kat_vectors/
+│   │   ├── kyber1024_clean.rsp
+│   │   ├── kyber1024.rsp
+│   │   ├── kyber512_clean.rsp
+│   │   ├── kyber512.rsp
+│   │   ├── kyber768_clean.rsp
+│   │   └── kyber768.rsp
+│   ├── kem_fail.rs
+│   ├── ntt_mul.rs
+│   ├── ntt_poly.rs
+│   ├── pack.rs
+│   ├── params_consistency.rs
+│   ├── serde.rs
+│   ├── utils_hash.rs
+│   ├── utils_msg.rs
+│   └── xof_matrix.rs
+├── Cargo.lock
 ├── Cargo.toml
 ├── CHANGELOG.md
 ├── LICENSE-APACHE
 ├── LICENSE-MIT
 ├── README.md
 ├── RELEASING.md
+├── ROADMAP.md
 ├── SECURITY.md
-├── to-do.md
-├── file-tree.md
-├── benches/
-│   ├── kem.rs
-│   ├── ntt.rs
-│   └── poly.rs
-├── src/
-│   ├── lib.rs
-│   ├── params.rs
-│   ├── ntt.rs
-│   ├── poly.rs
-│   ├── utils.rs
-│   ├── keygen.rs
-│   ├── encaps.rs
-│   ├── decaps.rs
-│   ├── kem.rs
-│   └── api.rs
-├── tests/
-│   ├── ntt_poly.rs # NEW
-│   ├── utils_msg.rs # NEW
-│   ├── pack.rs
-│   ├── ctr_drbg.rs
-│   ├── kat.rs
-│   └── kat_vectors/
-│       ├── kyber512.rsp
-│       ├── kyber512_clean.rsp
-│       ├── kyber768.rsp
-│       ├── kyber768_clean.rsp
-│       ├── kyber1024.rsp
-│       └── kyber1024_clean.rsp
-└── PQClean/
+└── to-do.md

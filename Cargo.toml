@@ -37,6 +37,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 rand_chacha = "0.3"
 rand = "0.8"
 serde_json = "1.0"
+# Note: temporary reference was removed to avoid build friction.
 
 [[example]]
 name = "no_std"

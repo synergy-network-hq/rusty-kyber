@@ -1,9 +1,9 @@
-use sha3::{Digest, Sha3_256, Sha3_512, Shake128, Shake256};
-use sha3::digest::{ExtendableOutput, XofReader};
+use sha3::{ Digest, Sha3_256, Sha3_512, Shake128, Shake256 };
+use sha3::digest::{ ExtendableOutput, XofReader };
 
-use rusty_kyber::params::{N, Q};
+use rusty_kyber::params::{ N, Q };
 use rusty_kyber::poly::Poly;
-use rusty_kyber::utils::{g, h, kdf, prf, rej_uniform, xof_matrix_entry};
+use rusty_kyber::utils::{ g, h, kdf, prf, rej_uniform, xof_matrix_entry };
 
 #[test]
 fn h_matches_sha3_256() {
@@ -50,7 +50,7 @@ fn kdf_matches_shake256_32bytes() {
 
 #[test]
 fn prf_nonce_and_length_behavior() {
-    let seed = [0xA5u8; 32];
+    let seed = [0xa5u8; 32];
     let mut out32_a = [0u8; 32];
     let mut out32_b = [0u8; 32];
     prf(&seed, 7, &mut out32_a);
@@ -89,12 +89,12 @@ fn rej_uniform_exact_pack() {
     }
 
     let mut buf = vec![0u8; 3 * (N / 2)];
-    for idx in 0..(N / 2) {
+    for idx in 0..N / 2 {
         let v0 = vals[2 * idx];
         let v1 = vals[2 * idx + 1];
 
-        buf[3 * idx] = (v0 & 0xFF) as u8;
-        buf[3 * idx + 1] = ((v0 >> 8) as u8) & 0x0F | (((v1 & 0x0F) as u8) << 4);
+        buf[3 * idx] = (v0 & 0xff) as u8;
+        buf[3 * idx + 1] = (((v0 >> 8) as u8) & 0x0f) | (((v1 & 0x0f) as u8) << 4);
         buf[3 * idx + 2] = (v1 >> 4) as u8;
     }
 

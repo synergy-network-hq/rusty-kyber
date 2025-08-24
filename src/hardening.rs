@@ -10,13 +10,11 @@
 //! - Double-execution defends against fault/glitch injection that flips a bit
 //!   during decapsulation. Mismatch yields an all-zero shared secret.
 
-use subtle::ConditionallySelectable;
-
-use subtle::{ConstantTimeEq, Choice};
+use subtle::{ ConstantTimeEq, Choice };
 #[cfg(feature = "zeroize")]
 use zeroize::Zeroizing;
 
-use crate::api::{Ciphertext, SecretKey, SharedSecret};
+use crate::api::{ Ciphertext, SecretKey, SharedSecret };
 use crate::params::SHARED_SECRET_BYTES;
 
 /// Hardened decapsulation: compute the shared secret twice and compare in

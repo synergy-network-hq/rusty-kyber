@@ -8,36 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-08-08
 
 ### Added
-- Pure-Rust ML-KEM (Kyber) implementation for kyber512/768/1024.
-- Constant-time decapsulation path; optional `hardening` feature with redundant checks.
-- `no_std` support (wasm32 build), fuzz targets, KAT harness for all levels.
-- Benches for NTT/poly/KEM; extensive unit tests to near-100% coverage.
-- CI: multi-toolchain matrix, wasm, cross aarch64 build + runtime smoke, fuzz smoke runs.
-- Docs.rs configuration with feature badges; README badges.
+
+* Pure-Rust ML-KEM (Kyber) implementation for kyber512/768/1024.
+* Constant-time decapsulation path; optional `hardening` feature with redundant checks.
+* `no_std` support (wasm32 build), fuzz targets, KAT harness for all levels.
+* Benches for NTT/poly/KEM; extensive unit tests to near-100% coverage.
+* CI: multi-toolchain matrix, wasm, cross aarch64 build + runtime smoke, fuzz smoke runs.
+* Docs.rs configuration with feature badges; README badges.
 
 ### Changed
-- Performance: inlining and batched NTT; branchless canonicalization in codecs.
+
+* Performance: inlining and batched NTT; branchless canonicalization in codecs.
 
 ### Security
-- Documented threat model; guidance for isolation and future masking work.
+
+* Documented threat model; guidance for isolation and future masking work.
 
 ---
 
 ## [Unreleased]
 
 ### Added
-- Pure-Rust Kyber (ML-KEM) with feature-gated levels: `kyber512` (default), `kyber768`, `kyber1024`.
-- Constant-time KEM decapsulation path using `subtle` (ct equality and conditional select).
-- NTT/InvNTT with standard zetas and Montgomery reduction.
-- Packing/encoding and polynomial compression helpers (generic d-bit codec).
-- Full NIST KAT harness with deterministic CTR-DRBG; vectors under `tests/kat_vectors/`.
-- Criterion benches: NTT, poly add/sub/pointwise, keygen/encaps/decaps.
-- `serde` and `zeroize` feature gates for public API types.
-- CI: toolchain/features matrix, wasm build, docs warnings, bench compile, packaging dry-run.
-- Licensing: MIT OR Apache-2.0.
+
+* Streaming SampleNTT helper for uniform polynomials via SHAKE128.
+* Deterministic KAT mode in tests using `rho||sigma = G(d||K)` and NTT-domain key storage.
+* FO transform aligned with FIPS 203 final: SS = K (encaps); decaps selects between `K'` and `Kbar = J(z||ct)`.
 
 ### Changed
-- Public API exported at crate root for ergonomic use.
+
+* XOF matrix indexing corrected to absorb `(rho || i || j)`.
+* `poly_to_msg` updated to use proper rounding for thresholding.
+* Public key/secret key packing now stores `t_hat` and `s_hat` in NTT domain.
+
+### Removed
+
+* `ml-kem` dev-dependency (kept as local reference only; folder slated for removal before release).
 
 ### Security
-- `#![forbid(unsafe_code)]` at crate root.
+
+* Strengthened constant-time paths; consistent domain handling for KEM operations.
